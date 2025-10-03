@@ -7,6 +7,9 @@ Created on Sat Sep 27 21:52:33 2025
 import pandas as pd 
 import numpy as np
 import matplotlib.pyplot as mat
+import seaborn as sea
+from sklearn.model_selection import StratifiedShuffleSplit
+
 
 mat.close()
 
@@ -20,7 +23,6 @@ print(df.head())
 
 "Step  2: Data Visualization"
 "----------------------------------------------------------------------------"
-
 #Histogram
 hist = df['Step'].hist()
 hist.set_title("Step vs # of Data Points")
@@ -57,30 +59,55 @@ mat.show()
 
 #3D Scatterplot
 
+#group by outputs (key, group) pairs
+grouped_by_step = df.groupby('Step')
+
+colours = [ #there are 13 colours here, one for each step
+    'blue',
+    'green',
+    'red',
+    'cyan',
+    'magenta',
+    'yellow',
+    'black',
+    'white',
+    'orange',
+    'purple',
+    'brown',
+    'pink',
+    'gray']
+
 fig = mat.figure(layout = 'constrained')
 threeD_plt = fig.add_subplot(1, 1, 1, projection = '3d')
-threeD_plt.scatter(df['X'], df['Y'], df['Z'])
 
-#for step, coords in df
+#unpack those key, group pairs, key is the step and the group we can access for the coords
+for i, (step_label, coords) in enumerate(grouped_by_step): #unpack tuple
+    threeD_plt.scatter(coords['X'],
+                       coords['Y'], 
+                       coords['Z'], 
+                       color = colours[i], 
+                       label = f'Step {step_label}'
+                       )
 
 threeD_plt_xlabel = 'X Coordinate'
 threeD_plt_ylabel = 'Y Coordinate'
 threeD_plt_zlabel = 'Z Coordinate'
-barplt.legend()
+threeD_plt.legend(loc ='center left', bbox_to_anchor = (1.1, 0.5))
 
 mat.show()
-
-
-#Plan for tomorrow
-#Group data by row Step, X, Y, Z 
-#Based on Step, give it a colour/shape
-#Plot it on 3D scatterplot
-
-
-
 "----------------------------------------------------------------------------"
 
 "Step  3: Correlation Analysis"
 "----------------------------------------------------------------------------"
+#firstly, let us split our dataset to avoid data leakage 
+splitter = StratifiedShuffleSplit(n_splits = 1,
+                               test_size = 0.2,
+                               random_state = 23)
+
+
+
+#pearson correlation
+# include correlation plot
+#explain correlation between features and target vars (REPORT)
 
 "----------------------------------------------------------------------------"
