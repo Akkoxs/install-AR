@@ -103,6 +103,28 @@ mat.show()
 splitter = StratifiedShuffleSplit(n_splits = 1,
                                test_size = 0.2,
                                random_state = 23)
+#returns the # of split.shuffle ops
+
+#
+for train_index, test_index in splitter.split(df, df["Step"]):    
+    strat_dat_train = df.loc[train_index].reset_index(drop=True)  
+    strat_dat_test = df.loc[test_index].reset_index(drop=True)
+    strat_dat_train = strat_dat_train.drop(columns=["Step"], axis = 1)
+    strat_dat_test = strat_dat_test.drop(columns=["Step"], axis = 1)
+
+    print(df.shape)
+    print(strat_dat_train.shape)
+    print(strat_dat_test.shape)
+
+    #Correlation matrix
+    corr_matrix = strat_dat_train.corr()
+    sea.heatmap(np.abs(corr_matrix))
+
+#for train_index, test_index in my_splitter.split(data, data["income_categories"]):
+    #reset index to 0 if you want a data point to be your first point in a different data set
+
+
+
 
 
 
