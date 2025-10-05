@@ -100,36 +100,77 @@ mat.show()
 "Step  3: Correlation Analysis"
 "----------------------------------------------------------------------------"
 #firstly, let us split our dataset to avoid data leakage 
-splitter = StratifiedShuffleSplit(n_splits = 1,
-                               test_size = 0.2,
-                               random_state = 23)
+
+#print(grouped_by_step.shape)
+
+for step, group in grouped_by_step:
+    corr_matrix = group[['X', 'Y', 'Z']].corr(method='pearson')
+
+    mat.figure(figsize=(5, 4))
+    sea.heatmap(corr_matrix, annot=True, cmap='coolwarm', vmin=-1, vmax=1)
+    mat.title(f'Correlation Heatmap for Step {step}')
+    mat.tight_layout()
+    mat.show()
+   
+#corr_matrix = grouped_by_step.corr(method='pearson')
+#sea.heatmap((corr_matrix))
+
+
+
+
 #returns the # of split.shuffle ops
+#splitter = StratifiedShuffleSplit(n_splits = 1,
+  #                             test_size = 0.2,
+ #                              random_state = 23)
 
 #
-for train_index, test_index in splitter.split(df, df["Step"]):    
-    strat_dat_train = df.loc[train_index].reset_index(drop=True)  
-    strat_dat_test = df.loc[test_index].reset_index(drop=True)
-    strat_dat_train = strat_dat_train.drop(columns=["Step"], axis = 1)
-    strat_dat_test = strat_dat_test.drop(columns=["Step"], axis = 1)
+#for train_index, test_index in splitter.split(df, df["Step"]):    
+    #strat_dat_train = df.loc[train_index].reset_index(drop=True)  
+    #strat_dat_test = df.loc[test_index].reset_index(drop=True)
+    #strat_dat_train = strat_dat_train.drop(columns=["Step"], axis = 1)
+    #strat_dat_test = strat_dat_test.drop(columns=["Step"], axis = 1)
 
-    print(df.shape)
-    print(strat_dat_train.shape)
-    print(strat_dat_test.shape)
+   # print(df.shape)
+    #print(strat_dat_train.shape)
+    #print(strat_dat_train.head())
 
-    #Correlation matrix
-    corr_matrix = strat_dat_train.corr()
-    sea.heatmap(np.abs(corr_matrix))
+    #print(strat_dat_test.shape)
+    #print(strat_dat_test.head())
 
-#for train_index, test_index in my_splitter.split(data, data["income_categories"]):
-    #reset index to 0 if you want a data point to be your first point in a different data set
-
-
-
-
-
+    #correlation matrix
+   # corr_matrix = strat_dat_train.corr()
+   # sea.heatmap((corr_matrix))
 
 #pearson correlation
 # include correlation plot
 #explain correlation between features and target vars (REPORT)
+
+"----------------------------------------------------------------------------"
+
+"Step  4: Classification Model Development/Engineering"
+"----------------------------------------------------------------------------"
+#returns the # of split.shuffle ops
+#splitter = StratifiedShuffleSplit(n_splits = 1,
+   #                            test_size = 0.2,
+    #                           random_state = 23)
+
+#
+#for train_index, test_index in splitter.split(df, df["Step"]):    
+ #   strat_dat_train = df.loc[train_index].reset_index(drop=True)  
+  #  strat_dat_test = df.loc[test_index].reset_index(drop=True)
+    #strat_dat_train = strat_dat_train.drop(columns=["Step"], axis = 1)
+    #strat_dat_test = strat_dat_test.drop(columns=["Step"], axis = 1)
+
+   # print(df.shape)
+    #print(strat_dat_train.shape)
+    #print(strat_dat_train.head())
+
+    #print(strat_dat_test.shape)
+    #print(strat_dat_test.head())
+
+    #correlation matrix
+   # corr_matrix = strat_dat_train.corr()
+   # sea.heatmap((corr_matrix))
+
 
 "----------------------------------------------------------------------------"
