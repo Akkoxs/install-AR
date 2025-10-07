@@ -15,6 +15,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import f1_score, precision_score, accuracy_score, mean_absolute_error, confusion_matrix, ConfusionMatrixDisplay
+
 
 #supress warnings - CHECK
 warnings.filterwarnings("ignore", category=UndefinedMetricWarning)
@@ -172,6 +174,8 @@ svm_gridSearch = GridSearchCV(
     )
 
 svm_gridSearch.fit(train_dat, train_ans)
+print("SVM Done!")
+print("Best SVM params:", svm_gridSearch.best_params_)
 
 "Model 2 - Random Forest w/ GridSearchCV"
 
@@ -202,6 +206,8 @@ rf_gridSearch = GridSearchCV(
 )
 
 rf_gridSearch.fit(train_dat, train_ans)
+print("RandomForest Done!")
+print("Best RF params:", rf_gridSearch.best_params_)
 
 "Model 3 Decision Tree w/ GridSearchCV "
 
@@ -229,6 +235,8 @@ dt_gridSearch = GridSearchCV(
     )
 
 dt_gridSearch.fit(train_dat, train_ans)
+print("DecisionTree Done!")
+print("Best DT params:", dt_gridSearch.best_params_)
 
 "Model 4 - Logistic Regression w/ RandomizedSearchCV"
 
@@ -254,11 +262,57 @@ lreg_randoSearch = RandomizedSearchCV(
 )
 
 lreg_randoSearch.fit(train_dat, train_ans)
+print("LogisticRegression Done!")
+print("Best LReg params:", lreg_randoSearch.best_params_)
 
 "----------------------------------------------------------------------------"
 
 "Step  5: Model Performance Analysis"
 "----------------------------------------------------------------------------"
+all_models = {
+    "SVM": svm_gridSearch.best_estimator_,
+    "Random Forest": rf_gridSearch.best_estimator_,
+    "Decision Tree": dt_gridSearch.best_estimator_,
+    "Logistic Regression": lreg_randoSearch.best_estimator_
+    }
+
+#storage loc for all eval results
+results = {}
+
+for name, model in all_models.items():
+    #generate predictions based on test data 
+    preds = all_models.predict(test_dat)
+    
+    #metrics
+    f1 = f1_score(test_ans, preds, average='macro')
+    precision = precision_score(test_ans, preds, average='macro')
+    accuracy = accuracy_score(test_ans, preds)
+    mae = mean_absolute_error(test_ans, preds)
+    
+    results[name] = {
+        "F1 Score (macro)": f1,
+        "Precision (macro)": precision,
+        "Accuracy": accuracy,
+        "Mean Absolute Error": mae,
+        "Predictions": preds 
+    }
+
+#visualize results
+print("Model Performance Summary:")
+perf_df = pd.DataFrame(results).T.drop(columns="Predictions") #drop just for visualization
+print(perf_df)
+
+
+#confusion matrix creation
+fig, axes = mat.subplots(1, len(all_models), figsize=(20, 5))
+
+for ax, (name, res) in zip(axes, results.items()):
+    cm = confusion_matrix(test_ans, res["Predictions"], labels=sorted(test_ans.unique()))
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=sorted(test_ans.unique()))
+    disp.plot(ax=ax, cmap='Blues', colorbar=False)
+    ax.set_title(name)
+
+mat.show()
 
 "----------------------------------------------------------------------------"
 
