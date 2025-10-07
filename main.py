@@ -12,11 +12,11 @@ import warnings
 from sklearn.model_selection import StratifiedShuffleSplit, StratifiedKFold, GridSearchCV, RandomizedSearchCV
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, StackingClassifier
 from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score, precision_score, accuracy_score, mean_absolute_error, confusion_matrix, ConfusionMatrixDisplay
-
+import joblib
 
 #supress warnings - CHECK
 warnings.filterwarnings("ignore", category=UndefinedMetricWarning)
@@ -318,10 +318,82 @@ mat.show()
 
 "Step  6: Stacked Model Performance Analysis"
 "----------------------------------------------------------------------------"
+print("STACKED MODEL: SVM + RF")
+
+stacked_base_models = [
+    ('svm', svm_gridSearch.best_estimator_),
+    ('rf', rf_gridSearch.best_estimator_)
+]
+
+#using lreg "meta" classifier
+stacked_meta_model = LogisticRegression(multi_class='multinomial', max_iter=5000, random_state=23) 
+
+#stacking classifier def
+stacked_model = StackingClassifier(
+    estimators = stacked_base_models,
+    final_estimator = stacked_meta_model,
+    cv = cv,
+    n_jobs = -1
+)
+
+stacked_model.fit(train_dat, train_ans)
+
+#generate predictions
+stacked_preds = stacked_model.predict(test_dat)
+
+#metrics 
+stacked_f1 = f1_score(test_ans, stacked_preds, average='macro')
+stacked_precision = precision_score(test_ans, stacked_preds, average='macro')
+stacked_accuracy = accuracy_score(test_ans, stacked_preds)
+stacked_mae = mean_absolute_error(test_ans, stacked_preds)
+
+# output performance 
+print("Stacked Model Performance Metrics:")
+print(f"F1 Score (macro):      {stacked_f1:.4f}")
+print(f"Precision (macro):     {stacked_precision:.4f}")
+print(f"Accuracy:              {stacked_accuracy:.4f}")
+
+#save to same results dictionary
+results["Stacked Model"] = {
+    "F1 Score (macro)": stacked_f1,
+    "Precision (macro)": stacked_precision,
+    "Accuracy": stacked_accuracy,
+    "Mean Absolute Error": stacked_mae,
+    "Predictions": stacked_preds
+    }
+
+
+#confusion matrix
+stacked_cm = confusion_matrix(test_ans, stacked_preds, labels = sorted(test_ans.unique()))
+disp = ConfusionMatrixDisplay(confusion_matrix = stacked_cm, display_labels = sorted(test_ans.unique()))
+disp.plot(cmap='Purples', colorbar=False)
+disp.ax_.set_title("Stacked Model Confusion Matrix")
+
+mat.show()
 
 "----------------------------------------------------------------------------"
 
 "Step  7: Model Evaluation"
 "----------------------------------------------------------------------------"
+ 
+#save in joblib format
+joblib.dump(stacked_model, "stacked_model.joblib")
+    
+new_dat = pd.DataFrame([
+    [9.375, 3.0625, 1.51],
+    [6.995, 5.125, 0.3875],
+    [0, 3.0625, 1.93],
+    [9.4, 3, 1.8],
+    [9.4, 3, 1.3]
+],
+    columns=["X", "Y", "Z"])
+
+#generate new prediction based on new data given & add to new df
+new_preds = stacked_model.predict(new_dat)
+new_dat["Predicted Step"] = new_preds
+
+print("----FINAL----")
+print("Predicted Step for New Data:")
+print(new_dat)
 
 "----------------------------------------------------------------------------"
