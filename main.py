@@ -247,7 +247,7 @@ lreg_grid = {
     'l1_ratio': np.linspace(0, 1, 10)  # mixing for elasticnet regularization
 }
 
-lreg = LogisticRegression(multi_class = 'multinomial', max_iter = 5000, random_state = 23) #5000 is set to avoid convergence warnings
+lreg = LogisticRegression(max_iter = 5000, random_state = 23) #5000 is set to avoid convergence warnings
 
 print("--LOGISTIC REGRESSION--")
 lreg_randoSearch = RandomizedSearchCV(
@@ -281,7 +281,7 @@ results = {}
 
 for name, model in all_models.items():
     #generate predictions based on test data 
-    preds = all_models.predict(test_dat)
+    preds = model.predict(test_dat)
     
     #metrics
     f1 = f1_score(test_ans, preds, average='macro')
